@@ -5,6 +5,11 @@ import Modal from "react-modal";
 
 Modal.setAppElement("#root");
 
+interface Type {
+  id: number;
+  name: string;
+}
+
 interface DamageInfo {
   armor: {
     arms: number;
@@ -25,6 +30,7 @@ interface DamageInfo {
 interface Weapon {
   id: number;
   name: string;
+  type: Type;
   damage: number;
   fire_rate: number;
   recoil: number;
@@ -40,6 +46,7 @@ interface Weapon {
 
 interface NewWeapon {
   name: string;
+  type_id: number;
   damage: number;
   fire_rate: number;
   recoil: number;
@@ -56,6 +63,11 @@ const API_BASE_URL = "http://localhost:8000";
 
 const fetchWeapons = async (): Promise<Weapon[]> => {
   const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/weapons`);
+  return data;
+};
+
+const fetchTypes = async (): Promise<Type[]> => {
+  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/types`);
   return data;
 };
 
@@ -79,6 +91,7 @@ function WeaponList() {
   const [editingWeapon, setEditingWeapon] = useState<Weapon | null>(null);
   const [newWeapon, setNewWeapon] = useState<NewWeapon>({
     name: "",
+    type_id: 0,
     damage: 0,
     fire_rate: 0,
     recoil: 0,
@@ -99,6 +112,11 @@ function WeaponList() {
   const { data: weapons, isLoading, error } = useQuery({
     queryKey: ["weapons"],
     queryFn: fetchWeapons,
+  });
+
+  const { data: types, isLoading: typesLoading } = useQuery({
+    queryKey: ["types"],
+    queryFn: fetchTypes,
   });
 
   const createMutation = useMutation({
@@ -137,6 +155,7 @@ function WeaponList() {
       setEditingWeapon(weapon);
       setNewWeapon({
         name: weapon.name,
+        type_id: weapon.type.id ?? 0,
         damage: weapon.damage,
         fire_rate: weapon.fire_rate,
         recoil: weapon.recoil,
@@ -152,6 +171,7 @@ function WeaponList() {
       setEditingWeapon(null);
       setNewWeapon({
         name: "",
+        type_id: 0,
         damage: 0,
         fire_rate: 0,
         recoil: 0,
@@ -176,6 +196,7 @@ function WeaponList() {
     setEditingWeapon(null);
     setNewWeapon({
       name: "",
+      type_id: 0,
       damage: 0,
       fire_rate: 0,
       recoil: 0,
@@ -229,6 +250,7 @@ function WeaponList() {
           filteredWeapons.map((weapon) => (
             <div key={weapon.id} className="card">
               <h3 className="text-lg font-semibold">{weapon.name}</h3>
+              <p className="text-sm opacity-80">Damage: {weapon.type.name}</p>
               <p className="text-sm opacity-80">Damage: {weapon.damage}</p>
               <p className="text-sm opacity-80">Fire Rate: {weapon.fire_rate}</p>
               <p className="text-sm opacity-80">Recoil: {weapon.recoil}</p>
@@ -289,6 +311,23 @@ function WeaponList() {
 
         {/* Основные характеристики */}
         <div className="field-group">
+        <div className="field-group">
+          <label htmlFor="type_id">Type</label>
+          <select
+            id="type_id"
+            value={newWeapon.type_id}
+            onChange={(e) => setNewWeapon({ ...newWeapon, type_id: Number(e.target.value) })}
+          >
+            <option value={0} disabled>
+              {typesLoading ? "Loading..." : "Выберите тип"}
+            </option>
+            {types?.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name}
+              </option>
+            ))}
+          </select>
+        </div>
           <h3>Basic Info</h3>
           <div>
             <label>Name</label>
