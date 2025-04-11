@@ -59,7 +59,8 @@ interface NewWeapon {
   damage_info: DamageInfo;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://194.87.102.3/api/";
+
 
 const fetchWeapons = async (): Promise<Weapon[]> => {
   const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/weapons`);
@@ -250,7 +251,7 @@ function WeaponList() {
           filteredWeapons.map((weapon) => (
             <div key={weapon.id} className="card">
               <h3 className="text-lg font-semibold">{weapon.name}</h3>
-              <p className="text-sm opacity-80">Damage: {weapon.type.name}</p>
+              <h4 className="text-sm font-semibold">Type: {weapon.type.name}</h4>
               <p className="text-sm opacity-80">Damage: {weapon.damage}</p>
               <p className="text-sm opacity-80">Fire Rate: {weapon.fire_rate}</p>
               <p className="text-sm opacity-80">Recoil: {weapon.recoil}</p>

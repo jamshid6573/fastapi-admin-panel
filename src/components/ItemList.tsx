@@ -53,7 +53,8 @@ interface NewItem {
   weapon_id: number;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://194.87.102.3/api/";
+
 
 const fetchItems = async (): Promise<Item[]> => {
   const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/items`);

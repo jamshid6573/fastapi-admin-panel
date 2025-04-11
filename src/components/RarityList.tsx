@@ -14,7 +14,8 @@ interface NewRarity {
   name: string;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://194.87.102.3/api/";
+
 
 const fetchRarities = async (): Promise<Rarity[]> => {
   const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/rarities`);

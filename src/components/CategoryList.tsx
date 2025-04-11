@@ -14,7 +14,8 @@ interface NewCategory {
   name: string;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://194.87.102.3/api/";
+
 
 const fetchCategories = async (): Promise<Category[]> => {
   const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/categories`);
