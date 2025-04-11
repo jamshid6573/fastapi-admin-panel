@@ -18,22 +18,26 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/types`);
   return data;
 };
 
 const createType = async (type: NewType) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/types`, type);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/types`, type);
   return data;
 };
 
 const updateType = async (type: Type) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/types/${type.id}`, type);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/types/${type.id}`, type);
   return data;
 };
 
 const deleteType = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/types/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/types/${id}`);
 };
 
 function TypeList() {

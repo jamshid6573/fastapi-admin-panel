@@ -63,27 +63,32 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchWeapons = async (): Promise<Weapon[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/weapons`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/weapons`);
   return data;
 };
 
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/types`);
   return data;
 };
 
 const createWeapon = async (weapon: NewWeapon) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/weapons`, weapon);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/weapons`, weapon);
   return data;
 };
 
 const updateWeapon = async (weapon: Weapon) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/weapons/${weapon.id}`, weapon);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/weapons/${weapon.id}`, weapon);
   return data;
 };
 
 const deleteWeapon = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/weapons/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/weapons/${id}`);
 };
 
 function WeaponList() {

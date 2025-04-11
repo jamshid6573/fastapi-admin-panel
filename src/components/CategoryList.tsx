@@ -18,22 +18,26 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/categories`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/categories`);
   return data;
 };
 
 const createCategory = async (category: NewCategory) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/categories`, category);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/categories`, category);
   return data;
 };
 
 const updateCategory = async (category: Category) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/categories/${category.id}`, category);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/categories/${category.id}`, category);
   return data;
 };
 
 const deleteCategory = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/categories/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/categories/${id}`);
 };
 
 function CategoryList() {

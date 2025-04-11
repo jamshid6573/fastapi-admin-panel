@@ -18,22 +18,26 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchRarities = async (): Promise<Rarity[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/rarities`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/rarities`);
   return data;
 };
 
 const createRarity = async (rarity: NewRarity) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/rarities`, rarity);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/rarities`, rarity);
   return data;
 };
 
 const updateRarity = async (rarity: Rarity) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/rarities/${rarity.id}`, rarity);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/rarities/${rarity.id}`, rarity);
   return data;
 };
 
 const deleteRarity = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/rarities/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/rarities/${id}`);
 };
 
 function RarityList() {

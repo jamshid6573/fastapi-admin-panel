@@ -57,47 +57,56 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchItems = async (): Promise<Item[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/items`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/items`);
   return data;
 };
 
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/types`);
   return data;
 };
 
 const fetchRarities = async (): Promise<Rarity[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/rarities`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/rarities`);
   return data;
 };
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/categories`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/categories`);
   return data;
 };
 
 const fetchCollections = async (): Promise<Collection[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/collections`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/collections`);
   return data;
 };
 
 const fetchWeapon = async (): Promise<Weapon[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/weapons`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/weapons`);
   return data;
 };
 
 const createItem = async (item: NewItem) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/items`, item);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/items`, item);
   return data;
 };
 
 const updateItem = async (item: Item) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/items/${item.id}`, item);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/items/${item.id}`, item);
   return data;
 };
 
 const deleteItem = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/items/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/items/${id}`);
 };
 
 function ItemList() {
@@ -251,7 +260,8 @@ function ItemList() {
       const formData = new FormData();
       formData.append("file", photoFile);
       try {
-        const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/upload`, formData, {
+        const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/upload`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

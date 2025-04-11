@@ -18,22 +18,26 @@ const API_BASE_URL = "http://194.87.102.3/api/";
 
 
 const fetchCollections = async (): Promise<Collection[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}/admin/api/v1/collections`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
+/collections`);
   return data;
 };
 
 const createCollection = async (collection: NewCollection) => {
-  const { data } = await axios.post(`${API_BASE_URL}/admin/api/v1/collections`, collection);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
+/collections`, collection);
   return data;
 };
 
 const updateCollection = async (collection: Collection) => {
-  const { data } = await axios.put(`${API_BASE_URL}/admin/api/v1/collections/${collection.id}`, collection);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
+/collections/${collection.id}`, collection);
   return data;
 };
 
 const deleteCollection = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}/admin/api/v1/collections/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1
+/collections/${id}`);
 };
 
 function CollectionList() {
