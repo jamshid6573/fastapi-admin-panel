@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -61,34 +62,28 @@ interface NewWeapon {
 
 const API_BASE_URL = "http://194.87.102.3/api/";
 
-
 const fetchWeapons = async (): Promise<Weapon[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/weapons`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/weapons`);
   return data;
 };
 
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/types`);
   return data;
 };
 
 const createWeapon = async (weapon: NewWeapon) => {
-  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/weapons`, weapon);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/weapons`, weapon);
   return data;
 };
 
 const updateWeapon = async (weapon: Weapon) => {
-  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
-/weapons/${weapon.id}`, weapon);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1/weapons/${weapon.id}`, weapon);
   return data;
 };
 
 const deleteWeapon = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}admin/api/v1
-/weapons/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1/weapons/${id}`);
 };
 
 function WeaponList() {
@@ -114,6 +109,8 @@ function WeaponList() {
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [weaponToDelete, setWeaponToDelete] = useState<Weapon | null>(null); // Храним оружие для удаления
 
   const { data: weapons, isLoading, error } = useQuery({
     queryKey: ["weapons"],
@@ -153,7 +150,10 @@ function WeaponList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteWeapon,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["weapons"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["weapons"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
 
   const openModal = (weapon?: Weapon) => {
@@ -228,6 +228,22 @@ function WeaponList() {
     }
   };
 
+  const openDeleteModal = (weapon: Weapon) => {
+    setWeaponToDelete(weapon);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (weaponToDelete) {
+      deleteMutation.mutate(weaponToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setWeaponToDelete(null);
+  };
+
   const filteredWeapons = weapons?.filter((weapon) =>
     weapon.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -290,7 +306,7 @@ function WeaponList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(weapon.id)}
+                  onClick={() => openDeleteModal(weapon)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -644,6 +660,14 @@ function WeaponList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={weaponToDelete?.name || ""}
+      />
     </div>
   );
 }

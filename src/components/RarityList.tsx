@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -16,28 +17,23 @@ interface NewRarity {
 
 const API_BASE_URL = "http://194.87.102.3/api/";
 
-
 const fetchRarities = async (): Promise<Rarity[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/rarities`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/rarities`);
   return data;
 };
 
 const createRarity = async (rarity: NewRarity) => {
-  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/rarities`, rarity);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/rarities`, rarity);
   return data;
 };
 
 const updateRarity = async (rarity: Rarity) => {
-  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
-/rarities/${rarity.id}`, rarity);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1/rarities/${rarity.id}`, rarity);
   return data;
 };
 
 const deleteRarity = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}admin/api/v1
-/rarities/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1/rarities/${id}`);
 };
 
 function RarityList() {
@@ -47,6 +43,9 @@ function RarityList() {
   const [newRarity, setNewRarity] = useState<NewRarity>({ name: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [rarityToDelete, setRarityToDelete] = useState<Rarity | null>(null); // Храним редкость для удаления
 
   const { data: rarities, isLoading, error } = useQuery({
     queryKey: ["rarities"],
@@ -81,8 +80,27 @@ function RarityList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteRarity,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rarities"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rarities"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
+
+  const openDeleteModal = (rarity: Rarity) => {
+    setRarityToDelete(rarity);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (rarityToDelete) {
+      deleteMutation.mutate(rarityToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setRarityToDelete(null);
+  };
 
   const openModal = (rarity?: Rarity) => {
     if (rarity) {
@@ -147,7 +165,7 @@ function RarityList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(rarity.id)}
+                  onClick={() => openDeleteModal(rarity)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -195,6 +213,14 @@ function RarityList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={rarityToDelete?.name || ""}
+      />
     </div>
   );
 }

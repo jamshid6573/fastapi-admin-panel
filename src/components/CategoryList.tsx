@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -48,6 +49,9 @@ function CategoryList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null); // Храним категорию для удаления
+
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
@@ -81,7 +85,10 @@ function CategoryList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteCategory,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
 
   const openModal = (category?: Category) => {
@@ -109,6 +116,22 @@ function CategoryList() {
     } else {
       createMutation.mutate(newCategory);
     }
+  };
+
+  const openDeleteModal = (category: Category) => {
+    setCategoryToDelete(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (categoryToDelete) {
+      deleteMutation.mutate(categoryToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setCategoryToDelete(null);
   };
 
   const filteredCategories = categories?.filter((category) =>
@@ -147,7 +170,7 @@ function CategoryList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(category.id)}
+                  onClick={() => openDeleteModal(category)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -195,6 +218,14 @@ function CategoryList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={categoryToDelete?.name || ""}
+      />
     </div>
   );
 }

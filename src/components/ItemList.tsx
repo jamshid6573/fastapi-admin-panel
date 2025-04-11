@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -55,58 +56,48 @@ interface NewItem {
 
 const API_BASE_URL = "http://194.87.102.3/api/";
 
-
 const fetchItems = async (): Promise<Item[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/items`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/items`);
   return data;
 };
 
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/types`);
   return data;
 };
 
 const fetchRarities = async (): Promise<Rarity[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/rarities`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/rarities`);
   return data;
 };
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/categories`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/categories`);
   return data;
 };
 
 const fetchCollections = async (): Promise<Collection[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/collections`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/collections`);
   return data;
 };
 
 const fetchWeapon = async (): Promise<Weapon[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/weapons`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/weapons`);
   return data;
 };
 
 const createItem = async (item: NewItem) => {
-  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/items`, item);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/items`, item);
   return data;
 };
 
 const updateItem = async (item: Item) => {
-  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
-/items/${item.id}`, item);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1/items/${item.id}`, item);
   return data;
 };
 
 const deleteItem = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}admin/api/v1
-/items/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1/items/${id}`);
 };
 
 function ItemList() {
@@ -124,6 +115,8 @@ function ItemList() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [itemToDelete, setItemToDelete] = useState<Item | null>(null); // Храним элемент для удаления
 
   const { data: items, isLoading: itemsLoading, error: itemsError } = useQuery({
     queryKey: ["items"],
@@ -183,7 +176,10 @@ function ItemList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteItem,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
 
   const openModal = (item?: Item) => {
@@ -260,8 +256,7 @@ function ItemList() {
       const formData = new FormData();
       formData.append("file", photoFile);
       try {
-        const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/upload`, formData, {
+        const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/upload`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -284,6 +279,22 @@ function ItemList() {
     } else {
       createMutation.mutate(itemData);
     }
+  };
+
+  const openDeleteModal = (item: Item) => {
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      deleteMutation.mutate(itemToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setItemToDelete(null);
   };
 
   const filteredItems = items?.filter((item) =>
@@ -340,7 +351,7 @@ function ItemList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(item.id)}
+                  onClick={() => openDeleteModal(item)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -486,6 +497,14 @@ function ItemList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={itemToDelete?.name || ""}
+      />
     </div>
   );
 }

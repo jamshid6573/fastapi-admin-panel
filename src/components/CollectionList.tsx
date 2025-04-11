@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -16,28 +17,23 @@ interface NewCollection {
 
 const API_BASE_URL = "http://194.87.102.3/api/";
 
-
 const fetchCollections = async (): Promise<Collection[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/collections`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/collections`);
   return data;
 };
 
 const createCollection = async (collection: NewCollection) => {
-  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/collections`, collection);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/collections`, collection);
   return data;
 };
 
 const updateCollection = async (collection: Collection) => {
-  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
-/collections/${collection.id}`, collection);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1/collections/${collection.id}`, collection);
   return data;
 };
 
 const deleteCollection = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}admin/api/v1
-/collections/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1/collections/${id}`);
 };
 
 function CollectionList() {
@@ -47,6 +43,9 @@ function CollectionList() {
   const [newCollection, setNewCollection] = useState<NewCollection>({ name: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [collectionToDelete, setCollectionToDelete] = useState<Collection | null>(null); // Храним коллекцию для удаления
 
   const { data: collections, isLoading, error } = useQuery({
     queryKey: ["collections"],
@@ -81,8 +80,27 @@ function CollectionList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteCollection,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["collections"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
+
+  const openDeleteModal = (collection: Collection) => {
+    setCollectionToDelete(collection);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (collectionToDelete) {
+      deleteMutation.mutate(collectionToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setCollectionToDelete(null);
+  };
 
   const openModal = (collection?: Collection) => {
     if (collection) {
@@ -147,7 +165,7 @@ function CollectionList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(collection.id)}
+                  onClick={() => openDeleteModal(collection)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -195,6 +213,14 @@ function CollectionList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={collectionToDelete?.name || ""}
+      />
     </div>
   );
 }

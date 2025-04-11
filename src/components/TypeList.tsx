@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Modal from "react-modal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal"; // Импортируем модальное окно
 
 Modal.setAppElement("#root");
 
@@ -16,28 +17,23 @@ interface NewType {
 
 const API_BASE_URL = "http://194.87.102.3/api/";
 
-
 const fetchTypes = async (): Promise<Type[]> => {
-  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1
-/types`);
+  const { data } = await axios.get(`${API_BASE_URL}admin/api/v1/types`);
   return data;
 };
 
 const createType = async (type: NewType) => {
-  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1
-/types`, type);
+  const { data } = await axios.post(`${API_BASE_URL}admin/api/v1/types`, type);
   return data;
 };
 
 const updateType = async (type: Type) => {
-  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1
-/types/${type.id}`, type);
+  const { data } = await axios.put(`${API_BASE_URL}admin/api/v1/types/${type.id}`, type);
   return data;
 };
 
 const deleteType = async (id: number) => {
-  await axios.delete(`${API_BASE_URL}admin/api/v1
-/types/${id}`);
+  await axios.delete(`${API_BASE_URL}admin/api/v1/types/${id}`);
 };
 
 function TypeList() {
@@ -47,6 +43,8 @@ function TypeList() {
   const [newType, setNewType] = useState<NewType>({ name: "" });
   const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Состояние для модального окна подтверждения
+  const [typeToDelete, setTypeToDelete] = useState<Type | null>(null); // Храним тип для удаления
 
   const { data: types, isLoading, error } = useQuery({
     queryKey: ["types"],
@@ -81,7 +79,10 @@ function TypeList() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteType,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["types"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["types"] });
+      setIsDeleteModalOpen(false); // Закрываем модальное окно после успешного удаления
+    },
   });
 
   const openModal = (type?: Type) => {
@@ -109,6 +110,22 @@ function TypeList() {
     } else {
       createMutation.mutate(newType);
     }
+  };
+
+  const openDeleteModal = (type: Type) => {
+    setTypeToDelete(type);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (typeToDelete) {
+      deleteMutation.mutate(typeToDelete.id);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setTypeToDelete(null);
   };
 
   const filteredTypes = types?.filter((type) =>
@@ -147,7 +164,7 @@ function TypeList() {
                   Edit
                 </button>
                 <button
-                  onClick={() => deleteMutation.mutate(type.id)}
+                  onClick={() => openDeleteModal(type)} // Открываем модальное окно подтверждения
                   className="button danger flex-1"
                 >
                   Delete
@@ -195,6 +212,14 @@ function TypeList() {
           </button>
         </div>
       </Modal>
+
+      {/* Модальное окно подтверждения удаления */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+        itemName={typeToDelete?.name || ""}
+      />
     </div>
   );
 }
